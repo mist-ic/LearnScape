@@ -1,0 +1,92 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Header } from './components/Header';
+import { RoadmapCard } from './components/RoadmapCard';
+import { Sparkles, List } from 'lucide-react';
+import { ManualRoadmap } from './pages/ManualRoadmap';
+import { AutomaticRoadmap } from './pages/AutomaticRoadmap';
+import { RoadmapView } from './pages/RoadmapView';
+import { RoadmapList } from './pages/RoadmapList';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
+import { useAuthStore } from './store/authStore';
+
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const navigate = useNavigate();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: window.location.pathname }} />;
+  }
+
+  return <>{children}</>;
+}
+
+function Home() {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  const handlePathSelect = (path: string) => {
+    if (isAuthenticated) {
+      navigate(path);
+    } else {
+      navigate('/login', { state: { from: path } });
+    }
+  };
+
+  return (
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="text-center mb-12">
+        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          Create Your Learning Journey
+        </h2>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          Choose how you want to build your personalized learning roadmap
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <RoadmapCard
+          title="Manual Selection"
+          description="Choose from our curated list of skills and create a customized learning path that fits your goals."
+          icon={<List className="h-6 w-6 text-indigo-600" />}
+          onClick={() => handlePathSelect('/manual')}
+        />
+        
+        <RoadmapCard
+          title="AI-Powered Generation"
+          description="Let our AI create a personalized roadmap based on your learning goals and preferences."
+          icon={<Sparkles className="h-6 w-6 text-indigo-600" />}
+          onClick={() => handlePathSelect('/automatic')}
+        />
+      </div>
+
+      <div className="mt-16 text-center">
+        <p className="text-sm text-gray-500">
+          Powered by advanced AI to help you achieve your learning goals effectively
+        </p>
+      </div>
+    </main>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/roadmaps" element={<RequireAuth><RoadmapList /></RequireAuth>} />
+          <Route path="/manual" element={<RequireAuth><ManualRoadmap /></RequireAuth>} />
+          <Route path="/automatic" element={<RequireAuth><AutomaticRoadmap /></RequireAuth>} />
+          <Route path="/roadmap/:id" element={<RequireAuth><RoadmapView /></RequireAuth>} />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
