@@ -12,6 +12,7 @@ export interface Resource {
   title: string;
   type: 'video' | 'article' | 'exercise';
   url: string;
+  isPaid: boolean;
 }
 
 export interface Roadmap {
@@ -21,6 +22,7 @@ export interface Roadmap {
   timeframe: string;
   steps: RoadmapStep[];
   progress: number;
+  resourcePreference: ResourcePreference;
 }
 
 export interface Category {
@@ -42,3 +44,5 @@ export interface TimeFrame {
   title: string;
   months: number | null;
 }
+
+export type ResourcePreference = 'free' | 'paid' | 'both';

@@ -4,10 +4,11 @@ import { ArrowLeft } from 'lucide-react';
 import { useRoadmapStore } from '../store/roadmapStore';
 import { Button } from '../components/Button';
 import { SelectionCard } from '../components/SelectionCard';
+import { ResourcePreferenceSelector } from '../components/ResourcePreferenceSelector';
 import { categories, timeFrames } from '../data/categories';
-import { Category, Skill, TimeFrame } from '../types';
+import { Category, Skill, TimeFrame, ResourcePreference } from '../types';
 
-type Step = 'category' | 'skill' | 'timeframe';
+type Step = 'category' | 'skill' | 'timeframe' | 'resources';
 
 export function ManualRoadmap() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export function ManualRoadmap() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [selectedTimeFrame, setSelectedTimeFrame] = useState<TimeFrame | null>(null);
+  const [selectedResourcePreference, setSelectedResourcePreference] = useState<ResourcePreference | null>(null);
   const [customMonths, setCustomMonths] = useState<number>(1);
   const createRoadmap = useRoadmapStore((state) => state.createRoadmap);
 
@@ -25,6 +27,9 @@ export function ManualRoadmap() {
     } else if (currentStep === 'timeframe') {
       setCurrentStep('skill');
       setSelectedTimeFrame(null);
+    } else if (currentStep === 'resources') {
+      setCurrentStep('timeframe');
+      setSelectedResourcePreference(null);
     }
   };
 
@@ -40,18 +45,24 @@ export function ManualRoadmap() {
 
   const handleTimeFrameSelect = (timeFrame: TimeFrame) => {
     setSelectedTimeFrame(timeFrame);
-    if (timeFrame.id !== 'custom') {
-      handleCreateRoadmap(timeFrame.months!);
+    setCurrentStep('resources');
+  };
+
+  const handleResourcePreferenceSelect = (preference: ResourcePreference) => {
+    setSelectedResourcePreference(preference);
+    if (selectedTimeFrame?.id !== 'custom') {
+      handleCreateRoadmap(selectedTimeFrame!.months!, preference);
     }
   };
 
-  const handleCreateRoadmap = (months: number) => {
+  const handleCreateRoadmap = (months: number, resourcePreference: ResourcePreference) => {
     if (!selectedSkill) return;
 
     const roadmap = createRoadmap(
       `${selectedSkill.title} Learning Path`,
       `Master ${selectedSkill.title} in ${months} months`,
-      `${months} months`
+      `${months} months`,
+      resourcePreference
     );
     navigate(`/roadmap/${roadmap.id}`);
   };
@@ -76,6 +87,7 @@ export function ManualRoadmap() {
             {currentStep === 'category' && 'Select a category to get started'}
             {currentStep === 'skill' && 'Choose a specific skill to learn'}
             {currentStep === 'timeframe' && 'How long do you want to learn?'}
+            {currentStep === 'resources' && 'What type of resources do you prefer?'}
           </p>
         </div>
       </div>
@@ -123,28 +135,35 @@ export function ManualRoadmap() {
                 selected={selectedTimeFrame?.id === timeFrame.id}
               />
             ))}
-
-            {selectedTimeFrame?.id === 'custom' && (
-              <div className="bg-white p-6 rounded-lg border border-gray-200">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of months
-                </label>
-                <div className="flex gap-4">
-                  <input
-                    type="number"
-                    min="1"
-                    max="24"
-                    value={customMonths}
-                    onChange={(e) => setCustomMonths(Number(e.target.value))}
-                    className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                  <Button onClick={() => handleCreateRoadmap(customMonths)}>
-                    Create Roadmap
-                  </Button>
-                </div>
-              </div>
-            )}
           </>
+        )}
+
+        {currentStep === 'resources' && (
+          <ResourcePreferenceSelector
+            value={selectedResourcePreference}
+            onChange={handleResourcePreferenceSelect}
+          />
+        )}
+
+        {currentStep === 'timeframe' && selectedTimeFrame?.id === 'custom' && (
+          <div className="bg-white p-6 rounded-lg border border-gray-200">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Number of months
+            </label>
+            <div className="flex gap-4">
+              <input
+                type="number"
+                min="1"
+                max="24"
+                value={customMonths}
+                onChange={(e) => setCustomMonths(Number(e.target.value))}
+                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+              <Button onClick={() => setCurrentStep('resources')}>
+                Continue
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>

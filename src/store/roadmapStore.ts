@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { Roadmap, RoadmapStep } from '../types';
+import { Roadmap, RoadmapStep, ResourcePreference } from '../types';
 import { generateId } from '../lib/utils';
 import { defaultRoadmaps } from '../data/roadmaps';
 
 interface RoadmapStore {
   roadmaps: Roadmap[];
   activeRoadmap: Roadmap | null;
-  createRoadmap: (title: string, description: string, timeframe: string) => Roadmap;
+  createRoadmap: (title: string, description: string, timeframe: string, resourcePreference: ResourcePreference) => Roadmap;
   addStep: (roadmapId: string, step: Omit<RoadmapStep, 'id' | 'completed'>) => void;
   updateProgress: (roadmapId: string, stepId: string, completed: boolean) => void;
   setActiveRoadmap: (roadmap: Roadmap) => void;
@@ -15,7 +15,7 @@ interface RoadmapStore {
 export const useRoadmapStore = create<RoadmapStore>((set) => ({
   roadmaps: defaultRoadmaps,
   activeRoadmap: null,
-  createRoadmap: (title, description, timeframe) => {
+  createRoadmap: (title, description, timeframe, resourcePreference) => {
     const newRoadmap: Roadmap = {
       id: generateId(),
       title,
@@ -23,6 +23,7 @@ export const useRoadmapStore = create<RoadmapStore>((set) => ({
       timeframe,
       steps: [],
       progress: 0,
+      resourcePreference,
     };
     set((state) => ({
       roadmaps: [...state.roadmaps, newRoadmap],
