@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,7 +7,7 @@ import { useRoadmapStore } from '../store/roadmapStore';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { ResourcePreferenceSelector } from '../components/ResourcePreferenceSelector';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { ResourcePreference } from '../types';
 
 const schema = z.object({
@@ -19,9 +19,13 @@ type FormData = z.infer<typeof schema>;
 
 export function AutomaticRoadmap() {
   const navigate = useNavigate();
-  const { createRoadmap, isGenerating, error } = useRoadmapStore();
+  const { createRoadmap, isGenerating, error, clearError } = useRoadmapStore();
   const [resourcePreference, setResourcePreference] = useState<ResourcePreference | null>(null);
   
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
   const {
     register,
     handleSubmit,
@@ -37,8 +41,8 @@ export function AutomaticRoadmap() {
     if (!resourcePreference) return;
 
     try {
-      const roadmap = createRoadmap(
-        `${data.prompt} Learning Path`,
+      const roadmap = await createRoadmap(
+        data.prompt,
         `Master ${data.prompt} in ${data.months} months`,
         `${data.months} months`,
         resourcePreference
@@ -61,7 +65,8 @@ export function AutomaticRoadmap() {
           label="What do you want to learn?"
           {...register('prompt')}
           error={errors.prompt?.message}
-          placeholder="e.g., Python programming"
+          placeholder="e.g., Python programming for data science"
+          disabled={isGenerating}
         />
 
         <Input
@@ -71,6 +76,7 @@ export function AutomaticRoadmap() {
           error={errors.months?.message}
           min={1}
           max={24}
+          disabled={isGenerating}
         />
 
         <div className="space-y-2">
@@ -84,7 +90,10 @@ export function AutomaticRoadmap() {
         </div>
 
         {error && (
-          <p className="text-red-600 text-sm">{error}</p>
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </div>
         )}
 
         <Button 
@@ -95,13 +104,20 @@ export function AutomaticRoadmap() {
           {isGenerating ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Creating Roadmap...
+              Creating Your Learning Path...
             </>
           ) : (
-            'Create Roadmap'
+            'Generate Learning Path'
           )}
         </Button>
       </form>
+
+      {isGenerating && (
+        <div className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p>Our AI is crafting a personalized learning path for you.</p>
+          <p>This may take a minute...</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useRoadmapStore } from '../store/roadmapStore';
 import { RoadmapHeader } from '../components/roadmap/RoadmapHeader';
 import { RoadmapStep } from '../components/roadmap/RoadmapStep';
+import { generateId } from '../lib/utils';
 
 export function RoadmapView() {
   const { id } = useParams<{ id: string }>();
@@ -14,6 +15,20 @@ export function RoadmapView() {
     return <div>Roadmap not found</div>;
   }
 
+  // Ensure each step has a unique ID
+  const stepsWithIds = React.useMemo(() => {
+    return roadmap.steps.map(step => ({
+      ...step,
+      id: step.id || generateId()
+    }));
+  }, [roadmap.steps]);
+
+  const handleToggleComplete = (stepId: string, completed: boolean) => {
+    if (roadmap.id) {
+      updateProgress(roadmap.id, stepId, completed);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <RoadmapHeader
@@ -23,11 +38,11 @@ export function RoadmapView() {
       />
 
       <div className="space-y-4">
-        {roadmap.steps.map((step) => (
+        {stepsWithIds.map((step) => (
           <RoadmapStep
             key={step.id}
             step={step}
-            onToggleComplete={(completed) => updateProgress(roadmap.id, step.id, completed)}
+            onToggleComplete={(completed) => handleToggleComplete(step.id, completed)}
           />
         ))}
       </div>
