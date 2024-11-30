@@ -19,7 +19,7 @@ type FormData = z.infer<typeof schema>;
 
 export function AutomaticRoadmap() {
   const navigate = useNavigate();
-  const { generateAIRoadmap, isGenerating, error } = useRoadmapStore();
+  const { createRoadmap, isGenerating, error } = useRoadmapStore();
   const [resourcePreference, setResourcePreference] = useState<ResourcePreference | null>(null);
   
   const {
@@ -37,14 +37,15 @@ export function AutomaticRoadmap() {
     if (!resourcePreference) return;
 
     try {
-      const roadmap = await generateAIRoadmap(
-        data.prompt,
-        data.months,
+      const roadmap = createRoadmap(
+        `${data.prompt} Learning Path`,
+        `Master ${data.prompt} in ${data.months} months`,
+        `${data.months} months`,
         resourcePreference
       );
       navigate(`/roadmap/${roadmap.id}`);
     } catch (error) {
-      console.error('Failed to generate roadmap:', error);
+      console.error('Failed to create roadmap:', error);
     }
   };
 
@@ -94,10 +95,10 @@ export function AutomaticRoadmap() {
           {isGenerating ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Generating Roadmap...
+              Creating Roadmap...
             </>
           ) : (
-            'Generate Roadmap'
+            'Create Roadmap'
           )}
         </Button>
       </form>
