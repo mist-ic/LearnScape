@@ -41,8 +41,8 @@ export function Register() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-12">
-      <div className="bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Create Account</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             label="Name"
@@ -65,12 +65,12 @@ export function Register() {
             Sign Up
           </Button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-300">
           Already have an account?{' '}
           <Link 
             to="/login" 
             state={{ from }}
-            className="text-indigo-600 hover:text-indigo-800"
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
           >
             Sign in
           </Link>

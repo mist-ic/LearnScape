@@ -10,6 +10,7 @@ import { RoadmapList } from './pages/RoadmapList';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { useAuthStore } from './store/authStore';
+import { useThemeStore } from './store/themeStore';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -37,10 +38,10 @@ function Home() {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+        <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
           Create Your Learning Journey
         </h2>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
           Choose how you want to build your personalized learning roadmap
         </p>
       </div>
@@ -49,20 +50,20 @@ function Home() {
         <RoadmapCard
           title="Manual Selection"
           description="Choose from our curated list of skills and create a customized learning path that fits your goals."
-          icon={<List className="h-6 w-6 text-indigo-600" />}
+          icon={<List className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />}
           onClick={() => handlePathSelect('/manual')}
         />
         
         <RoadmapCard
           title="AI-Powered Generation"
           description="Let our AI create a personalized roadmap based on your learning goals and preferences."
-          icon={<Sparkles className="h-6 w-6 text-indigo-600" />}
+          icon={<Sparkles className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />}
           onClick={() => handlePathSelect('/automatic')}
         />
       </div>
 
       <div className="mt-16 text-center">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Powered by advanced AI to help you achieve your learning goals effectively
         </p>
       </div>
@@ -71,9 +72,17 @@ function Home() {
 }
 
 function App() {
+  const theme = useThemeStore((state) => state.theme);
+
+  React.useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+  }, [theme]);
+
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />

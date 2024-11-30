@@ -75,15 +75,15 @@ export function ManualRoadmap() {
             variant="outline"
             size="sm"
             onClick={handleBack}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 dark:border-gray-600 dark:text-gray-200"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
         )}
         <div>
-          <h2 className="text-2xl font-bold">Create Learning Path</h2>
-          <p className="text-gray-600">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Create Learning Path</h2>
+          <p className="text-gray-600 dark:text-gray-300">
             {currentStep === 'category' && 'Select a category to get started'}
             {currentStep === 'skill' && 'Choose a specific skill to learn'}
             {currentStep === 'timeframe' && 'How long do you want to learn?'}
@@ -146,8 +146,8 @@ export function ManualRoadmap() {
         )}
 
         {currentStep === 'timeframe' && selectedTimeFrame?.id === 'custom' && (
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Number of months
             </label>
             <div className="flex gap-4">
@@ -157,7 +157,7 @@ export function ManualRoadmap() {
                 max="24"
                 value={customMonths}
                 onChange={(e) => setCustomMonths(Number(e.target.value))}
-                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-32 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
               />
               <Button onClick={() => setCurrentStep('resources')}>
                 Continue
