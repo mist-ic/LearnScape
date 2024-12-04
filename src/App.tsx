@@ -9,7 +9,6 @@ import { RoadmapView } from './pages/RoadmapView';
 import { RoadmapList } from './pages/RoadmapList';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
-import { Account } from './pages/Account';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './store/themeStore';
 import { toast } from 'react-hot-toast';
@@ -105,7 +104,6 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/account" element={<RequireAuth><Account /></RequireAuth>} />
           <Route path="/roadmaps" element={<RequireAuth><RoadmapList /></RequireAuth>} />
           <Route path="/manual" element={<RequireAuth><ManualRoadmap /></RequireAuth>} />
           <Route path="/automatic" element={<RequireAuth><AutomaticRoadmap /></RequireAuth>} />
