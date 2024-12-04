@@ -3,20 +3,20 @@ logs
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies
-node_modules
-dist
-dist-ssr
-*.local
+# Dependency directories
+node_modules/
+dist/
+dist-ssr/
+
+# Production build
+build/
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+.vscode/
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
@@ -33,17 +33,28 @@ dist-ssr
 *.tsbuildinfo
 
 # Testing
-coverage
+coverage/
 
-# Production build
-build
-
-# Misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Bolt specific
+# Miscellaneous
+*.local
 .bolt/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Netlify
+.netlify/
+
+# Vite
+.vite/
+
+# Ignore generated files by Vite
+.vite/deps/
