@@ -1,6 +1,50 @@
 import OpenAI from 'openai';
 import { Handler } from '@netlify/functions';
-import { OPENAI_CONFIG, OPENAI_PROMPTS } from '../../src/server/config/openai';
+
+const OPENAI_CONFIG = {
+  model: "gpt-4",
+  temperature: 0.7,
+  response_format: { type: "json_object" }
+};
+
+const SYSTEM_PROMPT = `You are an expert learning path creator. Your task is to create detailed, structured learning roadmaps.
+Follow these guidelines:
+
+1. Break down the learning path into clear, manageable steps
+2. Each step should have:
+   - A clear title
+   - A detailed description
+   - Estimated time to complete
+   - Relevant learning resources (URLs to actual content)
+3. Resources should be high-quality and match the user's preference (free/paid/both)
+4. Steps should be in logical progression from basics to advanced
+5. Include practical exercises and projects
+6. Consider the specified timeframe when creating steps
+
+Return the response in this exact JSON format:
+{
+  "steps": [
+    {
+      "title": "string",
+      "description": "string",
+      "estimatedTime": "string",
+      "resources": [
+        {
+          "title": "string",
+          "type": "video" | "article" | "exercise",
+          "url": "string",
+          "isPaid": boolean
+        }
+      ]
+    }
+  ]
+}`;
+
+const generateUserPrompt = (topic: string, months: number, resourcePreference: string) => `
+Create a ${months}-month learning roadmap for ${topic}.
+Resource preference: ${resourcePreference} resources only.
+Include specific, real-world resources (URLs) that match this preference.
+`;
 
 const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -13,19 +57,19 @@ const handler: Handler = async (event) => {
   try {
     const { topic, months, resourcePreference } = JSON.parse(event.body || '{}');
     
-    if (!process.env.VITE_OPENAI_API_KEY) {
+    if (!process.env.OPENAI_API_KEY) {
       throw new Error('OpenAI API key is missing');
     }
 
     const openai = new OpenAI({
-      apiKey: process.env.VITE_OPENAI_API_KEY
+      apiKey: process.env.OPENAI_API_KEY
     });
 
     const completion = await openai.chat.completions.create({
       ...OPENAI_CONFIG,
       messages: [
-        { role: 'system', content: OPENAI_PROMPTS.system },
-        { role: 'user', content: OPENAI_PROMPTS.generateUserPrompt(topic, months, resourcePreference) }
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: generateUserPrompt(topic, months, resourcePreference) }
       ]
     });
 
@@ -52,7 +96,7 @@ const handler: Handler = async (event) => {
         months,
         resourcePreference,
         totalSteps: parsedResponse.steps.length,
-        generationTime: 0, // We don't track this in serverless function
+        generationTime: 0,
         model: OPENAI_CONFIG.model
       }
     };
