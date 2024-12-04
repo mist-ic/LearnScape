@@ -1,84 +1,56 @@
 import OpenAI from 'openai';
 import { Handler } from '@netlify/functions';
 
-// Function to generate a unique ID
-const generateId = () => {
-  const timestamp = Date.now().toString(36);
-  const randomStr = Math.random().toString(36).substring(2, 8);
-  return `${timestamp}-${randomStr}`;
-};
-
 const OPENAI_CONFIG = {
-  model: 'gpt-4o-mini',
+  model: 'gpt-3.5-turbo-1106',
   temperature: 0.2,
-  max_tokens: 2000,
+  max_tokens: 1000,
   top_p: 0.95,
   frequency_penalty: 0.0,
-  presence_penalty: 0.0
+  presence_penalty: 0.0,
+  response_format: { type: "json_object" }
 };
 
 const SYSTEM_PROMPT = `You are a JSON-focused API that creates learning roadmaps.
 Your ONLY role is to return a perfectly formatted JSON object.
 You must NEVER include any explanatory text before or after the JSON.
-Start your response with '{' and end with '}'.
 
-Follow these strict formatting rules:
-
-1. Use DOUBLE QUOTES for ALL strings (never single quotes)
-2. NO trailing commas in arrays or objects
-3. NO extra spaces in property names
-4. ALL property names must be in double quotes
-5. URLs must be complete and properly quoted
-6. Boolean values must be exactly true or false (no quotes)
-7. Numbers must be without quotes
-8. NO comments or additional text
+Create a concise roadmap with these rules:
+1. 3-5 steps maximum
+2. Each step should be brief but clear
+3. 1-2 resources per step maximum
+4. Keep descriptions under 100 characters
+5. Focus on core concepts only
 
 The response must exactly match this structure:
 {
   "steps": [
     {
-      "title": "Example Step",
-      "description": "Example description",
-      "estimatedTime": "1 week",
+      "title": "string",
+      "description": "string",
+      "estimatedTime": "string",
       "resources": [
         {
-          "title": "Example Resource",
+          "title": "string",
           "type": "video",
-          "url": "https://example.com/resource",
+          "url": "string",
           "isPaid": false
         }
-      ],
-      "order": 1
+      ]
     }
   ]
-}
-
-CRITICAL RULES:
-- Resource "type" must be exactly one of: "video", "article", "exercise"
-- "isPaid" must be exactly: true or false (not strings)
-- "order" must be a number without quotes
-- All URLs must start with "http://" or "https://"`;
+}`;
 
 const generateUserPrompt = (topic: string, months: number, resourcePreference: string) => `
-Create a ${months}-month learning roadmap for ${topic} with these requirements:
+Create a ${months}-month learning roadmap for ${topic}.
+Include ${resourcePreference === 'both' ? 'both free and paid' : resourcePreference} resources only.
+Keep it simple and focused on core concepts.`.trim();
 
-1. Include ${resourcePreference === 'both' ? 'both free and paid' : resourcePreference} resources
-2. Total time must be ${months} months
-3. Each step needs 2-3 resources from established platforms
-4. Resources must include:
-   - Main tutorial/course
-   - Practice exercises
-   - Documentation/reference
-
-FORMATTING REQUIREMENTS:
-1. Return ONLY the JSON object
-2. Start with '{' and end with '}'
-3. Use double quotes for ALL strings
-4. No trailing commas
-5. Boolean true/false without quotes
-6. Numbers without quotes
-7. Complete URLs starting with http:// or https://
-`.trim();
+const generateId = () => {
+  const timestamp = Date.now().toString(36);
+  const randomStr = Math.random().toString(36).substring(2, 8);
+  return `${timestamp}-${randomStr}`;
+};
 
 const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -114,10 +86,7 @@ const handler: Handler = async (event) => {
 
     let parsedResponse;
     try {
-      // Clean any potential whitespace or unexpected characters
-      const cleanedContent = responseContent.trim();
-      parsedResponse = JSON.parse(cleanedContent);
-      
+      parsedResponse = JSON.parse(responseContent.trim());
       if (!parsedResponse.steps || !Array.isArray(parsedResponse.steps)) {
         throw new Error('Invalid response format: missing steps array');
       }
@@ -126,7 +95,7 @@ const handler: Handler = async (event) => {
       throw new Error('Failed to parse OpenAI response');
     }
     
-    // Add IDs and completed status to steps
+    // Process steps with minimal validation
     const processedSteps = parsedResponse.steps.map((step: any) => ({
       ...step,
       id: generateId(),
