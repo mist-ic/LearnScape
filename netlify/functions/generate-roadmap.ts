@@ -2,14 +2,14 @@ import OpenAI from 'openai';
 import { Handler } from '@netlify/functions';
 
 const OPENAI_CONFIG = {
-  model: "gpt-4",
-  temperature: 0.7,
-  response_format: { type: "json_object" }
+  model: "gpt-4-1106-preview",
+  temperature: 0.7
 };
 
 const SYSTEM_PROMPT = `You are an expert learning path creator. Your task is to create detailed, structured learning roadmaps.
-Follow these guidelines:
+You must ALWAYS respond with valid JSON only, no other text or explanation.
 
+Follow these guidelines:
 1. Break down the learning path into clear, manageable steps
 2. Each step should have:
    - A clear title
@@ -21,7 +21,7 @@ Follow these guidelines:
 5. Include practical exercises and projects
 6. Consider the specified timeframe when creating steps
 
-Return the response in this exact JSON format:
+IMPORTANT: Your response must be ONLY valid JSON in this exact format, with no additional text:
 {
   "steps": [
     {
@@ -44,7 +44,8 @@ const generateUserPrompt = (topic: string, months: number, resourcePreference: s
 Create a ${months}-month learning roadmap for ${topic}.
 Resource preference: ${resourcePreference} resources only.
 Include specific, real-world resources (URLs) that match this preference.
-`;
+
+Remember: Respond with ONLY the JSON object, no other text.`;
 
 const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -78,13 +79,33 @@ const handler: Handler = async (event) => {
       throw new Error('Empty response from OpenAI');
     }
 
-    const parsedResponse = JSON.parse(responseContent);
+    let parsedResponse;
+    try {
+      // Remove any potential markdown code block syntax
+      const cleanedContent = responseContent.replace(/```json\n?|\n?```/g, '').trim();
+      parsedResponse = JSON.parse(cleanedContent);
+      if (!parsedResponse.steps || !Array.isArray(parsedResponse.steps)) {
+        throw new Error('Invalid response format: missing steps array');
+      }
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response:', responseContent);
+      throw new Error('Failed to parse OpenAI response');
+    }
     
     // Validate resources
     parsedResponse.steps.forEach((step: any, stepIndex: number) => {
+      if (!Array.isArray(step.resources)) {
+        throw new Error(`Step ${stepIndex + 1} is missing resources array`);
+      }
       step.resources.forEach((resource: any, resourceIndex: number) => {
         if (typeof resource.isPaid !== 'boolean') {
           throw new Error(`Resource ${resourceIndex + 1} in step ${stepIndex + 1} is missing required fields: isPaid`);
+        }
+        if (!resource.type || !['video', 'article', 'exercise'].includes(resource.type)) {
+          throw new Error(`Resource ${resourceIndex + 1} in step ${stepIndex + 1} has invalid type`);
+        }
+        if (!resource.url || typeof resource.url !== 'string') {
+          throw new Error(`Resource ${resourceIndex + 1} in step ${stepIndex + 1} is missing valid URL`);
         }
       });
     });
