@@ -6,17 +6,17 @@ interface User {
   name: string;
 }
 
-interface AuthStore {
-  user: User | null;
+interface AuthState {
   isAuthenticated: boolean;
+  user: User | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  user: null,
+export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
+  user: null,
   login: async (email: string, password: string) => {
     // In a real app, this would make an API call
     // For demo purposes, we'll simulate a successful login

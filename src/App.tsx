@@ -11,6 +11,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './store/themeStore';
+import { toast } from 'react-hot-toast';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -79,6 +80,21 @@ function App() {
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
   }, [theme]);
+
+  React.useEffect(() => {
+    window.addEventListener('unhandledrejection', (event) => {
+      if (event.reason?.message?.includes('502')) {
+        toast.error(
+          'The server is taking too long to respond. Please try again with a simpler request or try again later.',
+          { duration: 5000 }
+        );
+      }
+    });
+
+    return () => {
+      window.removeEventListener('unhandledrejection', () => {});
+    };
+  }, []);
 
   return (
     <Router>
