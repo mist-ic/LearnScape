@@ -1,6 +1,13 @@
 import OpenAI from 'openai';
 import { Handler } from '@netlify/functions';
 
+// Function to generate a unique ID
+const generateId = () => {
+  const timestamp = Date.now().toString(36);
+  const randomStr = Math.random().toString(36).substring(2, 8);
+  return `${timestamp}-${randomStr}`;
+};
+
 const OPENAI_CONFIG = {
   model: 'gpt-4o-mini',
   temperature: 0.2,
@@ -122,7 +129,7 @@ const handler: Handler = async (event) => {
     // Add IDs and completed status to steps
     const processedSteps = parsedResponse.steps.map((step: any) => ({
       ...step,
-      id: crypto.randomUUID(),
+      id: generateId(),
       completed: false
     }));
 
