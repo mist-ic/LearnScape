@@ -1,5 +1,5 @@
 import React from 'react';
-import { Brain, LogOut, BookOpen } from 'lucide-react';
+import { Brain, LogOut, BookOpen, UserCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Button } from './Button';
@@ -25,6 +25,12 @@ export function Header() {
                   <Button variant="outline" size="sm" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
                     My Roadmaps
+                  </Button>
+                </Link>
+                <Link to="/account">
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <UserCircle className="h-4 w-4" />
+                    Account
                   </Button>
                 </Link>
                 <span className="text-sm text-gray-600 dark:text-gray-300">Welcome, {user?.name}</span>
